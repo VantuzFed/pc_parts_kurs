@@ -14,7 +14,7 @@ class LoginForm(FlaskForm):
 mydb = connect(
     host='127.0.0.1',
     user='root',
-    password='35678'
+    password=''
 )
 
 app = Flask(__name__)
