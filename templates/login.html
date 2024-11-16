@@ -8,11 +8,21 @@
         <hr class="my-4">
 
 
-<main class="form-signin w-100 m-auto container-sm">
+<main class="form-signin container-sm">
 <form method="POST" action="{{ url_for('login') }}">
     {{ form.csrf_token }}
-    {{ form.name.label }} {{ form.name(size=20) }}
-    <input type="submit" value="Go">
+    <p>{{ form.login.label }}</p>
+    <p>{{ form.login(size=20) }}</p>
+    <p>{{ form.password.label }}</p>
+    <p>{{ form.password(size=20) }}</p>
+    <input type="submit" value="Login">
 </form>
+    {% with messages = get_flashed_messages() %}
+   {% if messages %}
+      {% for message in messages %}
+         {{ message }}
+      {% endfor %}
+   {% endif %}
+{% endwith %}
          </div>
 {% endblock %}
