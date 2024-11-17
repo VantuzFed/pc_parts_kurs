@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+    <div class="jumbotron">
+        <h1 class="display-4">Окно регистрации</h1>
+        <hr class="my-4">
+
+
+<main class="form-signin container-sm">
+<form method="POST" action="{{ url_for('register') }}">
+    {{ form.csrf_token }}
+    <p>{{ form.login.label }}</p>
+    <p>{{ form.login(size=20) }}</p>
+    <p>{{ form.e_mail.label }}</p>
+    <p>{{ form.e_mail(size=20) }}</p>
+    <p>{{ form.first_name.label }}</p>
+    <p>{{ form.first_name(size=20) }}</p>
+    <p>{{ form.last_name.label }}</p>
+    <p>{{ form.last_name(size=20) }}</p>
+    <p>{{ form.phone.label }}</p>
+    <p>{{ form.phone(size=20) }}</p>
+    <p>{{ form.password.label }}</p>
+    <p>{{ form.password(size=20) }}</p>
+    <input type="submit" value="Зарегистрироваться">
+</form>
+    {% with messages = get_flashed_messages() %}
+   {% if messages %}
+      {% for message in messages %}
+         {{ message }}
+      {% endfor %}
+   {% endif %}
+{% endwith %}
+         </div>
+{% endblock %}

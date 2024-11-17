@@ -8,7 +8,8 @@ import os
 mydb = connect(
     host='127.0.0.1',
     user='root',
-    password='35678'
+    password='35678',
+    db='pc_parts'
 )
 
 app = Flask(__name__)
@@ -22,43 +23,47 @@ def index():
 def login():
     form = LoginForm()
     if request.method == 'POST' and form.validate():
-        # self.log = self.ui.ent_login.text()
-        # self.passwd = self.ui.ent_passwd.text()
-        # cur = self.obj.cursor()
-        # cur.execute('select * from users where login = \'{}\' and passwd = \'{}\''.format(self.log, self.passwd))
-        # res = cur.fetchone()
-        # try:
-        #     if res[2] == self.log and res[3] == self.passwd:
-        #         QMessageBox.information(self,'Сообщение', 'Авторизация прошла успешно')
-        # except:
-        #     QMessageBox.warning(self,'Предупреждение', 'Неверное имя пользователя или пароль')
-        # cur.close()
-        flash(f'login: {form.login.data} | password: {form.password.data}')
+        login_str = form.login.data
+        password_str = form.password.data
+        cur = mydb.cursor()
+        cur.execute('select * from users where login = \'{}\' and password_ = \'{}\''.format(login_str, password_str))
+        res = cur.fetchone()
+        print(res)
+        try:
+            if res[1] == login_str or res[6] == password_str:
+                flash('Вы успешно зашли в аккаунт')
+        except:
+            flash('Неверное имя пользователя или пароль')
+        cur.close()
     return render_template('login.html', form=form)
 
-@app.route('/register')
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-
-    # def registration(self):
-    #     self.username = self.ui.ent_username.text()
-    #     self.log = self.ui.ent_login.text()
-    #     self.passwd = self.ui.ent_passwd.text()
-    #     cur = self.obj.cursor()
-    #     cur.execute('select * from users where login = \'{}\' and passwd = \'{}\' and username = \'{}\''.format(self.log, self.passwd, self.username))
-    #     res = cur.fetchone()
-    #     print(res)
-    #     try:
-    #         if res[2] == self.log and res[3] == self.passwd and res[1] == self.username:
-    #             QMessageBox.warning(self,'Сообщение', 'Такой пользователь уже существует')
-    #     except:
-    #         val = (self.username, self.log, self.passwd)
-    #         sql = 'INSERT INTO users (username, login, passwd) VALUES(%s,%s,%s)'
-    #         cur.execute(sql, val)
-    #         self.obj.commit()
-    #         QMessageBox.information(self, 'Сообщение', 'Пользователь успешно создан')
-    #     finally:
-    #         cur.close()
-    return '<h1 style=\"text-align: center;\">WIP</h1>'
+    form = RegisterForm()
+    if request.method == 'POST' and form.validate():
+        login_str = form.login.data
+        e_mail_str = form.e_mail.data
+        f_name_str = form.first_name.data
+        l_name_str = form.last_name.data
+        phone_str = form.phone.data
+        password_str = form.password.data
+        cur = mydb.cursor()
+        cur.execute('select * from users where login = \'{}\' and e_mail = \'{}\''.format(login_str, e_mail_str))
+        res = cur.fetchone()
+        print(res)
+        try:
+            if res[1] == login_str or res[4] == e_mail_str:
+                flash('Такой пользователь уже существует')
+        except:
+            val = (login_str, f_name_str, l_name_str, e_mail_str, phone_str, password_str)
+            sql = 'INSERT INTO users (login, first_name, last_name, e_mail, phone_number, password_) VALUES(%s,%s,%s,%s,%s,%s)'
+            print(sql)
+            cur.execute(sql, val)
+            mydb.commit()
+            flash('Пользователь успешно создан')
+        finally:
+            cur.close()
+    return render_template('register.html', form=form)
 
 @app.route('/catalog')
 def catalog():
