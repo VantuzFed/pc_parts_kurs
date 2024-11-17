@@ -11,11 +11,11 @@
 <main class="form-signin container-sm">
 <form method="POST" action="{{ url_for('login') }}">
     {{ form.csrf_token }}
-    <p>{{ form.login.label }}</p>
+    <a>{{ form.login.label }}</a>
     <p>{{ form.login(size=20) }}</p>
-    <p>{{ form.password.label }}</p>
+    <a>{{ form.password.label }}</a>
     <p>{{ form.password(size=20) }}</p>
-    <input type="submit" value="Войти">
+    <input class="btn btn-primary d-inline-flex align-items-center" style="background-color: #40004a;" type="submit" value="Войти">
 </form>
     {% with messages = get_flashed_messages() %}
    {% if messages %}

@@ -1,6 +1,7 @@
+from types import NoneType
 from flask import Flask, render_template, flash, request
 from db_forms import *
-from markupsafe import Markup
+# from markupsafe import Markup
 from flask_wtf.csrf import CSRFProtect
 from mysql.connector import connect
 import os
@@ -28,12 +29,10 @@ def login():
         cur = mydb.cursor()
         cur.execute('select * from users where login = \'{}\' and password_ = \'{}\''.format(login_str, password_str))
         res = cur.fetchone()
-        print(res)
-        try:
-            if res[1] == login_str or res[6] == password_str:
-                flash('Вы успешно зашли в аккаунт')
-        except:
+        if type(res) is NoneType:
             flash('Неверное имя пользователя или пароль')
+        elif res[1] == login_str or res[6] == password_str:
+            flash('Вы успешно зашли в аккаунт')
         cur.close()
     return render_template('login.html', form=form)
 
@@ -50,19 +49,15 @@ def register():
         cur = mydb.cursor()
         cur.execute('select * from users where login = \'{}\' and e_mail = \'{}\''.format(login_str, e_mail_str))
         res = cur.fetchone()
-        print(res)
-        try:
-            if res[1] == login_str or res[4] == e_mail_str:
-                flash('Такой пользователь уже существует')
-        except:
+        if type(res) is NoneType:
             val = (login_str, f_name_str, l_name_str, e_mail_str, phone_str, password_str)
             sql = 'INSERT INTO users (login, first_name, last_name, e_mail, phone_number, password_) VALUES(%s,%s,%s,%s,%s,%s)'
-            print(sql)
             cur.execute(sql, val)
             mydb.commit()
             flash('Пользователь успешно создан')
-        finally:
-            cur.close()
+        elif res[1] == login_str or res[4] == e_mail_str:
+            flash('Такой пользователь уже существует')
+        cur.close()
     return render_template('register.html', form=form)
 
 @app.route('/catalog')
