@@ -55,7 +55,9 @@ price int
 
 create table users(
 id int primary key auto_increment,
-fio varchar(60),
+login varchar(20),
+first_name varchar(20),
+last_name varchar(20),
 e_mail varchar(30),
 phone_number int,
 password_ varchar(20),
