@@ -1,17 +1,21 @@
 from types import NoneType
 from flask import Flask, render_template, flash, request
 from db_forms import *
-# from markupsafe import Markup
+from markupsafe import Markup
 from flask_wtf.csrf import CSRFProtect
 from mysql.connector import connect
 import os
 
-mydb = connect(
-    host='127.0.0.1',
-    user='root',
-    password='35678',
-    db='pc_parts'
-)
+try:
+        mydb = connect(
+        host='127.0.0.1',
+        user='root',
+        password='35678',
+        db='pc_parts'
+    )
+except:
+    print('db connection error, aborted')
+    exit(1)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(12).hex()
@@ -30,9 +34,11 @@ def login():
         cur.execute('select * from users where login = \'{}\' and password_ = \'{}\''.format(login_str, password_str))
         res = cur.fetchone()
         if type(res) is NoneType:
-            flash('Неверное имя пользователя или пароль')
+            flash(Markup('<h3>Неверное имя пользователя или пароль</h3>'))
         elif res[1] == login_str or res[6] == password_str:
-            flash('Вы успешно зашли в аккаунт')
+            flash(Markup('<h3>Вы успешно зашли в аккаунт</h3>'))
+            for i in range(1,len(res),1):
+                flash(Markup(f'<p>{res[i]}</p>'))
         cur.close()
     return render_template('login.html', form=form)
 
@@ -47,22 +53,22 @@ def register():
         phone_str = form.phone.data
         password_str = form.password.data
         cur = mydb.cursor()
-        cur.execute('select * from users where login = \'{}\' and e_mail = \'{}\''.format(login_str, e_mail_str))
+        cur.execute('select * from users where login = \'{}\' or e_mail = \'{}\''.format(login_str, e_mail_str))
         res = cur.fetchone()
         if type(res) is NoneType:
             val = (login_str, f_name_str, l_name_str, e_mail_str, phone_str, password_str)
             sql = 'INSERT INTO users (login, first_name, last_name, e_mail, phone_number, password_) VALUES(%s,%s,%s,%s,%s,%s)'
             cur.execute(sql, val)
             mydb.commit()
-            flash('Пользователь успешно создан')
+            flash(Markup('<h3>Пользователь успешно создан</h3>'))
         elif res[1] == login_str or res[4] == e_mail_str:
-            flash('Такой пользователь уже существует')
+            flash(Markup('<h3>Такой пользователь уже существует</h3>'))
         cur.close()
     return render_template('register.html', form=form)
 
 @app.route('/catalog')
 def catalog():
-    return '<h1 style=\"text-align: center;\">WIP</h1>'
+    return render_template('catalog.html')
 
 
 if __name__ == '__main__':

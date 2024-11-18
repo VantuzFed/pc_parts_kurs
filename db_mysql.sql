@@ -59,7 +59,7 @@ login varchar(20),
 first_name varchar(20),
 last_name varchar(20),
 e_mail varchar(30),
-phone_number int,
+phone_number varchar(15),
 password_ varchar(20),
 profile_image varchar(20)
 );
