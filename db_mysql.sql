@@ -3,6 +3,7 @@ drop schema if exists pc_parts;
 create schema if not exists pc_parts;
 use pc_parts; 
 
+
 CREATE TABLE `Users` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `login` varchar(20) UNIQUE NOT NULL,
@@ -13,6 +14,15 @@ CREATE TABLE `Users` (
   `password_` varchar(20) NOT NULL,
   `account_type` enum('User','Admin') DEFAULT 'User',
   `profile_image` varchar(20)
+);
+
+CREATE TABLE `Sessions` (
+  `id` int PRIMARY KEY AUTO_INCREMENT,
+  `user_id` int UNIQUE,
+  `token` varchar(40),
+  `ip_address` varchar(12),
+  `start_time` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `expiration_date` timestamp
 );
 
 CREATE TABLE `Warehouses` (
@@ -74,6 +84,8 @@ CREATE TABLE `Order_details` (
   `unit_price` numeric(10,2)
 );
 
+ALTER TABLE `Sessions` ADD FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+
 ALTER TABLE `Warehouse_stock` ADD FOREIGN KEY (`warehouse_id`) REFERENCES `Warehouses` (`id`) ON DELETE CASCADE;
 
 ALTER TABLE `Warehouse_stock` ADD FOREIGN KEY (`component_id`) REFERENCES `Components` (`id`) ON DELETE CASCADE;
@@ -87,4 +99,3 @@ ALTER TABLE `Orders` ADD FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DE
 ALTER TABLE `Order_details` ADD FOREIGN KEY (`component_id`) REFERENCES `Components` (`id`);
 
 ALTER TABLE `Order_details` ADD FOREIGN KEY (`order_id`) REFERENCES `Orders` (`id`) ON DELETE CASCADE;
-
