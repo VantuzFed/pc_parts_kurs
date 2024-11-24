@@ -19,7 +19,7 @@ CREATE TABLE `Users` (
 CREATE TABLE `Sessions` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `user_id` int UNIQUE,
-  `token` varchar(40),
+  `token` varchar(40) UNIQUE,
   `ip_address` varchar(12),
   `start_time` timestamp DEFAULT CURRENT_TIMESTAMP,
   `expiration_date` timestamp
