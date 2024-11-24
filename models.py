@@ -1,12 +1,12 @@
 from typing import List, Optional
 
-from sqlalchemy import Column, DECIMAL, Enum, ForeignKeyConstraint, Index, Integer, String, TIMESTAMP, Text, text, create_engine
-from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship, sessionmaker
+from sqlalchemy import Column, DECIMAL, Enum, ForeignKeyConstraint, Index, Integer, String, TIMESTAMP, Text, text
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
 from sqlalchemy.orm.base import Mapped
 
 Base = declarative_base()
 
-engine = create_engine("mysql+pymysql://root:35678@127.0.0.1/pc_parts")
+
 
 class Components(Base):
     __tablename__ = 'Components'
@@ -159,9 +159,5 @@ class OrderDetails(Base):
 
     component: Mapped[Optional['Components']] = relationship('Components', back_populates='Order_details')
     order: Mapped[Optional['Orders']] = relationship('Orders', back_populates='Order_details')
-
-Session = sessionmaker(bind=engine)
-
-
 
 
