@@ -1,9 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}Главная страница{% endblock %}
+{% block title %}{{ page_name }}{% endblock %}
 
 {% block content %}
+    <style>
+        /* Стили для скрытой формы */
+        .hidden {
+            display: none;
+        }
+
+    </style>
     <div class="jumbotron">
+            <button class="btn btn-primary mb-3" style="background-color: #40004a;" onclick="toggleForm()">+</button>
+<main id="form-container" class="form-signin container-sm hidden">
+<form method="POST" action="{{ url_for(type) }}">
+    {{ form.csrf_token }}
+        {% for field in form if name != 'csrf_token' %}
+            <div>
+                <a>{{ field.label }}</a> <p>{{ field() }}</p>
+            </div>
+        {% endfor %}
+    <input class="btn btn-primary d-inline-flex align-items-center" style="background-color: #40004a;" type="submit" value="Добавить">
+</form>
 <div class="album py-5 bg-light">
         <div class="container">
           <div class="row">
@@ -28,4 +46,15 @@
         </div>
       </div>
     </div>
+    <script>
+        // Функция для показа/скрытия формы
+        function toggleForm() {
+            const form = document.getElementById('form-container');
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+            } else {
+                form.classList.add('hidden');
+            }
+        }
+    </script>
 {% endblock %}

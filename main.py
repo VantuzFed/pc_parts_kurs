@@ -60,9 +60,20 @@ def register():
 
     return render_template('register.html', form=form)
 
-@app.route('/catalog')
-def catalog():
-    return render_template('catalog.html')
+@app.route('/parts')
+def parts():
+    form = ComponentsForm()
+    return render_template('catalog.html', type='parts', form=form, page_name='Запчасти')
+
+@app.route('/suppliers')
+def suppliers():
+    form = SuppliersForm()
+    return render_template('catalog.html', type='suppliers', form=form, page_name='Поставщики')
+
+@app.route('/warehouses')
+def warehouses():
+    form = WarehousesForm()
+    return render_template('catalog.html', type='warehouses', form=form, page_name='Склады')
 
 
 if __name__ == '__main__':
