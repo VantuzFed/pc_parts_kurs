@@ -7,7 +7,6 @@ from sqlalchemy.orm.base import Mapped
 Base = declarative_base()
 
 
-
 class Components(Base):
     __tablename__ = 'Components'
 
@@ -91,6 +90,7 @@ class Sessions(Base):
     __tablename__ = 'Sessions'
     __table_args__ = (
         ForeignKeyConstraint(['user_id'], ['Users.id'], ondelete='CASCADE', name='Sessions_ibfk_1'),
+        Index('token', 'token', unique=True),
         Index('user_id', 'user_id', unique=True)
     )
 
@@ -159,5 +159,3 @@ class OrderDetails(Base):
 
     component: Mapped[Optional['Components']] = relationship('Components', back_populates='Order_details')
     order: Mapped[Optional['Orders']] = relationship('Orders', back_populates='Order_details')
-
-
