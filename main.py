@@ -4,7 +4,7 @@ from db_forms import *
 from markupsafe import Markup
 from flask_wtf.csrf import CSRFProtect
 import os
-from sqlalchemy import  create_engine, or_
+from sqlalchemy import  create_engine, or_, and_
 from sqlalchemy.orm import sessionmaker
 from models import *
 
@@ -60,17 +60,39 @@ def register():
 
     return render_template('register.html', form=form)
 
-@app.route('/parts')
+@app.route('/parts', methods=['GET', 'POST'])
 def parts():
     form = ComponentsForm()
-    return render_template('catalog.html', type='parts', form=form, page_name='Запчасти')
+    if request.method == 'POST' and form.validate():
+        vendor_str = form.vendor.data
+        model_str = form.model.data
+        type_str = form.type.data
+        price_str = form.price.data
+        with Session() as db:
+            part = db.query(Components).filter(and_(Components.vendor == vendor_str, Components.model == model_str)).first()
+        if part:
+            if part.model == model_str:
+                flash(Markup('<h3>Такая модель уже есть</h3>'))
+        else:
+            with Session() as db:
+                new_part = Components(vendor=vendor_str, model=model_str, type=type_str, price=price_str)
+                db.add(new_part)
+                db.commit()
+            flash(Markup('<h3>Запчасти успешно добавлена</h3>'))
+    with Session() as db:
+        query = db.query(Components.id, Components.vendor, Components.model, Components.type, Components.price)
+        rows = [list(row) for row in query.all()]
+    for row in rows:
+        for col in row:
+            print(col)
+    return render_template('catalog.html', type='parts', form=form, page_name='Запчасти', rows=rows)
 
-@app.route('/suppliers')
+@app.route('/suppliers', methods=['GET', 'POST'])
 def suppliers():
     form = SuppliersForm()
     return render_template('catalog.html', type='suppliers', form=form, page_name='Поставщики')
 
-@app.route('/warehouses')
+@app.route('/warehouses', methods=['GET', 'POST'])
 def warehouses():
     form = WarehousesForm()
     return render_template('catalog.html', type='warehouses', form=form, page_name='Склады')

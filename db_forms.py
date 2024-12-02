@@ -27,7 +27,7 @@ class WarehousesForm(FlaskForm):
     capacity = IntegerField('Вместимость склада:', validators=[DataRequired()])
 
 class ComponentsForm(FlaskForm):
-    vendors = StringField('Производитель запчасти:', validators=[DataRequired(), Length(min=5, max=60)])
+    vendor = StringField('Производитель запчасти:', validators=[DataRequired(), Length(min=5, max=60)])
     model = StringField('Модель запчасти:', validators=[DataRequired(), Length(min=5, max=60)])
     type = StringField('Тип:', validators=[DataRequired(), Length(min=5, max=60)])
     price = FloatField('Цена запчасти:', validators=[DataRequired()])
