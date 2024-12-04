@@ -68,21 +68,21 @@ CREATE TABLE `Supplier_components` (
   `supply_date` timestamp DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE `Orders` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
-  `user_id` int UNIQUE,
-  `order_date` timestamp DEFAULT CURRENT_TIMESTAMP,
-  `status` varchar(50) DEFAULT 'В обработке',
-  `total_price` numeric(10,2) DEFAULT 0
-);
+-- CREATE TABLE `Orders` (
+--   `id` int PRIMARY KEY AUTO_INCREMENT,
+--   `user_id` int UNIQUE,
+--   `order_date` timestamp DEFAULT CURRENT_TIMESTAMP,
+--   `status` varchar(50) DEFAULT 'В обработке',
+--   `total_price` numeric(10,2) DEFAULT 0
+-- );
 
-CREATE TABLE `Order_details` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
-  `order_id` int UNIQUE,
-  `component_id` int UNIQUE,
-  `quantity` int,
-  `unit_price` numeric(10,2)
-);
+-- CREATE TABLE `Order_details` (
+--   `id` int PRIMARY KEY AUTO_INCREMENT,
+--   `order_id` int UNIQUE,
+--   `component_id` int UNIQUE,
+--   `quantity` int,
+--   `unit_price` numeric(10,2)
+-- );
 
 ALTER TABLE `Sessions` ADD FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
 
@@ -94,8 +94,8 @@ ALTER TABLE `Supplier_components` ADD FOREIGN KEY (`component_id`) REFERENCES `C
 
 ALTER TABLE `Supplier_components` ADD FOREIGN KEY (`supplier_id`) REFERENCES `Suppliers` (`id`) ON DELETE CASCADE;
 
-ALTER TABLE `Orders` ADD FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+-- ALTER TABLE `Orders` ADD FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
 
-ALTER TABLE `Order_details` ADD FOREIGN KEY (`component_id`) REFERENCES `Components` (`id`);
+-- ALTER TABLE `Order_details` ADD FOREIGN KEY (`component_id`) REFERENCES `Components` (`id`);
 
-ALTER TABLE `Order_details` ADD FOREIGN KEY (`order_id`) REFERENCES `Orders` (`id`) ON DELETE CASCADE;
+-- ALTER TABLE `Order_details` ADD FOREIGN KEY (`order_id`) REFERENCES `Orders` (`id`) ON DELETE CASCADE;

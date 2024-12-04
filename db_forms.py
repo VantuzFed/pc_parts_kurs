@@ -16,7 +16,7 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Пароль:', validators=[DataRequired(), Length(min=4, max=20)])
 
 class SuppliersForm(FlaskForm):
-    name = StringField('Название поставщика:', validators=[DataRequired(), Length(min=5, max=60)])
+    name = StringField('Название поставщика:', validators=[DataRequired(), Length(min=3, max=60)])
     e_mail = StringField('E-mail:', validators=[DataRequired(), Email(message="Введите корректный адресс электронной почты")])
     phone = StringField('Номер телефона:', validators=[DataRequired(), Length(min=11, max=15)])
     address = StringField('Адрес поставщика:', validators=[DataRequired(), Length(min=4, max=100)])
@@ -27,7 +27,7 @@ class WarehousesForm(FlaskForm):
     capacity = IntegerField('Вместимость склада:', validators=[DataRequired()])
 
 class ComponentsForm(FlaskForm):
-    vendor = StringField('Производитель запчасти:', validators=[DataRequired(), Length(min=5, max=60)])
+    vendor = StringField('Производитель запчасти:', validators=[DataRequired(), Length(min=3, max=60)])
     model = StringField('Модель запчасти:', validators=[DataRequired(), Length(min=5, max=60)])
     type = StringField('Тип:', validators=[DataRequired(), Length(min=5, max=60)])
     price = FloatField('Цена запчасти:', validators=[DataRequired()])

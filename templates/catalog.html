@@ -12,6 +12,13 @@
     </style>
     <div class="jumbotron">
             <button class="btn btn-primary mb-3" style="background-color: #40004a;" onclick="toggleForm()">+</button>
+            {% with messages = get_flashed_messages() %}
+   {% if messages %}
+      {% for message in messages %}
+         {{ message }}
+      {% endfor %}
+   {% endif %}
+{% endwith %}
 <div id="form-container" class="form-signin container-sm hidden">
 <form method="POST" action="{{ url_for(type) }}">
     {{ form.csrf_token }}
@@ -35,11 +42,7 @@
                   <p>{{ col }}</p>
                     {% endfor %}
                   <div class="d-flex justify-content-between align-items-center">
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
                       <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
-                    </div>
-                    <small class="text-muted">9 mins</small>
                   </div>
                 </div>
               </div>

@@ -72,30 +72,64 @@ def parts():
             part = db.query(Components).filter(and_(Components.vendor == vendor_str, Components.model == model_str)).first()
         if part:
             if part.model == model_str:
-                flash(Markup('<h3>Такая модель уже есть</h3>'))
+                flash(Markup('<h3>Такая запчасть уже есть</h3>'))
         else:
             with Session() as db:
                 new_part = Components(vendor=vendor_str, model=model_str, type=type_str, price=price_str)
                 db.add(new_part)
                 db.commit()
-            flash(Markup('<h3>Запчасти успешно добавлена</h3>'))
+            flash(Markup('<h3>Запчасть успешно добавлена</h3>'))
     with Session() as db:
-        query = db.query(Components.id, Components.vendor, Components.model, Components.type, Components.price)
+        query = db.query(Components.id, Components.vendor, Components.model, Components.type, Components.price, Components.creation_date)
         rows = [list(row) for row in query.all()]
-    for row in rows:
-        for col in row:
-            print(col)
     return render_template('catalog.html', type='parts', form=form, page_name='Запчасти', rows=rows)
 
 @app.route('/suppliers', methods=['GET', 'POST'])
 def suppliers():
     form = SuppliersForm()
-    return render_template('catalog.html', type='suppliers', form=form, page_name='Поставщики')
+    if request.method == 'POST' and form.validate():
+        name_str = form.name.data
+        e_mail_str = form.e_mail.data
+        phone_str = form.phone.data
+        address_str = form.address.data
+        with Session() as db:
+            supplier = db.query(Suppliers).filter(Suppliers.name == name_str).first()
+        if supplier:
+            if supplier.name == name_str or supplier.address == address_str:
+                flash(Markup('<h3>Такой поставщик уже есть</h3>'))
+        else:
+            with Session() as db:
+                new_supplier = Suppliers(name=name_str, e_mail=e_mail_str, phone_number=phone_str, address=address_str)
+                db.add(new_supplier)
+                db.commit()
+            flash(Markup('<h3>Поставщик успешно добавлен</h3>'))
+    with Session() as db:
+        query = db.query(Suppliers.id, Suppliers.name, Suppliers.e_mail, Suppliers.phone_number, Suppliers.address)
+        rows = [list(row) for row in query.all()]
+    return render_template('catalog.html', type='suppliers', form=form, page_name='Поставщики', rows=rows)
 
 @app.route('/warehouses', methods=['GET', 'POST'])
 def warehouses():
     form = WarehousesForm()
-    return render_template('catalog.html', type='warehouses', form=form, page_name='Склады')
+    if request.method == 'POST' and form.validate():
+        name_str = form.name.data
+        address_str = form.address.data
+        capacity_str = form.capacity.data
+        with Session() as db:
+            warehouse = db.query(Warehouses).filter(Warehouses.name == name_str).first()
+        if warehouse:
+            if warehouse.name == name_str or warehouse.address == address_str:
+                flash(Markup('<h3>Такой склад уже есть</h3>'))
+        else:
+            with Session() as db:
+                new_warehouse = Warehouses(name=name_str, address=address_str, capacity=capacity_str)
+                db.add(new_warehouse)
+                db.commit()
+            flash(Markup('<h3>Склад успешно добавлен</h3>'))
+    with Session() as db:
+        query = db.query(Warehouses.id, Warehouses.name, Warehouses.address, Warehouses.capacity)
+        rows = [list(row) for row in query.all()]
+    return render_template('catalog.html', type='warehouses', form=form, page_name='Склады', rows=rows)
 
 
 if __name__ == '__main__':
