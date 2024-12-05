@@ -34,7 +34,9 @@ CREATE TABLE `Components` (
   `price` DECIMAL(10, 2) NOT NULL,
   `creation_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `update_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `comp_image` VARCHAR(20)
+  `comp_image` VARCHAR(20),
+  `created_by` INT,
+  FOREIGN KEY (`created_by`) REFERENCES `Users` (`id`) ON DELETE SET NULL
 );
 
 -- Таблица остатков на складах
