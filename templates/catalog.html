@@ -20,12 +20,14 @@
    {% endif %}
 {% endwith %}
 <div id="form-container" class="form-signin container-sm hidden">
-<form method="POST" action="{{ url_for(type) }}">
-    {{ form.csrf_token }}
+<form method="POST" action="{{ url_for(type) }}" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
         {% for field in form %}
-            <div>
-                <a>{{ field.label }}</a> <p>{{ field() }}</p>
-            </div>
+            {% if field.name != 'csrf_token' %}
+                <div>
+                    <a>{{ field.label }}</a> <p>{{ field }}</p>
+                </div>
+            {% endif %}
         {% endfor %}
     <input class="btn btn-primary d-inline-flex align-items-center" style="background-color: #40004a;" type="submit" value="Добавить">
 </form>
@@ -36,14 +38,18 @@
             {% for row in rows %}
             <div class="col-md-4" id="container-{{ row[0] }}">
               <div class="card mb-4 box-shadow">
-                <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&amp;bg=55595c&amp;fg=eceeef&amp;text=Thumbnail" alt="Thumbnail [100%x225]" style="height: 225px; width: 100%; display: block;" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22208%22%20height%3D%22225%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20208%20225%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_1933f0f9fe6%20text%20%7B%20fill%3A%23eceeef%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A11pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_1933f0f9fe6%22%3E%3Crect%20width%3D%22208%22%20height%3D%22225%22%20fill%3D%22%2355595c%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%2266.96666717529297%22%20y%3D%22117.45%22%3EThumbnail%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E" data-holder-rendered="true">
-                <div class="card-body">
+                  {% if row[-1] %}
+                <img class="card-img-top"style="height: 225px; width: 100%; display: block;" src="uploads/{{ row[-1] }}" data-holder-rendered="true">
+                  {% else %}
+                              <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">Пусто</text></svg>
+                    {% endif %}
+                  <div class="card-body">
                     {% for col in row %}
                   <p>{{ col }}</p>
                     {% endfor %}
-                  <div class="d-flex justify-content-between align-items-center">
-                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
-                  </div>
+<!--                  <div class="d-flex justify-content-between align-items-center">-->
+<!--                      <button type="button" class="btn btn-sm btn-outline-secondary">Delete</button>-->
+<!--                  </div>-->
                 </div>
               </div>
             </div>

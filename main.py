@@ -1,16 +1,22 @@
 from types import NoneType
-from flask import Flask, render_template, flash, request, make_response, redirect, url_for
+from flask import Flask, render_template, flash, request, make_response, redirect, url_for, send_from_directory
+from werkzeug.utils import secure_filename
 from db_forms import *
 from markupsafe import Markup
 from flask_wtf.csrf import CSRFProtect
 import os
-from sqlalchemy import  create_engine, or_, and_
+from sqlalchemy import  create_engine, or_, and_, func
 from sqlalchemy.orm import sessionmaker
 from models import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(12).hex()
 csrf = CSRFProtect(app)
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 engine = create_engine("mysql+pymysql://root:35678@127.0.0.1/pc_parts")
 Session = sessionmaker(bind=engine)
@@ -85,8 +91,8 @@ def parts():
         vendor_str = form.vendor.data
         model_str = form.model.data
         type_str = form.type.data
-        price_str = form.price.data
         user_id = request.cookies.get('user_id')
+        file = form.image.data
         with Session() as db:
             part = db.query(Components).filter(and_(Components.vendor == vendor_str, Components.model == model_str)).first()
         if part:
@@ -94,12 +100,17 @@ def parts():
                 flash(Markup('<h3>Такая запчасть уже есть</h3>'))
         else:
             with Session() as db:
-                new_part = Components(vendor=vendor_str, model=model_str, type=type_str, price=price_str, created_by=user_id)
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)  # Защищённое имя файла
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                else:
+                    flash('Неподдерживаемый формат файла!', 'danger')
+                new_part = Components(vendor=vendor_str, model=model_str, type=type_str, created_by=user_id, image=filename)
                 db.add(new_part)
                 db.commit()
             flash(Markup('<h3>Запчасть успешно добавлена</h3>'))
     with Session() as db:
-        query = db.query(Components.id, Components.vendor, Components.model, Components.type, Components.price, Components.creation_date, Users.first_name).join(Users)
+        query = db.query(Components.id, Components.vendor, Components.model, Components.type, Components.creation_date, Users.first_name, Components.image).join(Users)
         rows = [list(row) for row in query.all()]
     return render_template('catalog.html', type='parts', form=form, page_name='Запчасти', rows=rows, username=username)
 
@@ -158,6 +169,76 @@ def logout():
     response.set_cookie('user_id', '', expires=0)
     return response
 
+@app.route('/comp_to_sup', methods=['GET', 'POST'])
+def comp_to_sup():
+    form = SupplierComponentsForm()
+    username = get_user()
+    with Session() as db:
+        sup_items = db.query(Suppliers).all()
+        form.sup_id.choices = [(item.id, item.name) for item in sup_items]
+        comp_items = db.query(Components).all()
+        form.comp_id.choices = [(item.id, f'{item.vendor} {item.model}') for item in comp_items]
+    if request.method == 'POST' and form.validate():
+        sup_str = form.sup_id.data
+        comp_str = form.comp_id.data
+        price_str = form.price.data
+        with Session() as db:
+            sup_comp = db.query(SupplierComponents).filter(and_((SupplierComponents.supplier_id == sup_str),(SupplierComponents.component_id == comp_str))).first()
+        if sup_comp:
+            if sup_comp == sup_str and sup_comp == comp_str:
+                flash(Markup('<h3>Такая связь уже есть</h3>'))
+        else:
+            with Session() as db:
+                new_sup_comp = SupplierComponents(supplier_id=sup_str, component_id=comp_str, price=price_str)
+                db.add(new_sup_comp)
+                db.commit()
+            flash(Markup('<h3>Связь успешно добавлена</h3>'))
+    with Session() as db:
+        query = db.query(SupplierComponents.id, Suppliers.name, Components.model, SupplierComponents.price).join(Components).join(Suppliers)
+        rows = [list(row) for row in query.all()]
+    return render_template('catalog.html', type='comp_to_sup', form=form, page_name='Поставщики и комплектующие', rows=rows, username=username)
+
+@app.route('/ware_to_comp', methods=['GET', 'POST'])
+def ware_to_comp():
+    form = WarehouseStockForm()
+    username = get_user()
+    with Session() as db:
+        ware_items = db.query(Warehouses).all()
+        form.ware_id.choices = [(item.id, item.name) for item in ware_items]
+        comp_items = db.query(Components).all()
+        form.comp_id.choices = [(item.id, f'{item.vendor} {item.model}') for item in comp_items]
+    if request.method == 'POST' and form.validate():
+        ware_str = form.ware_id.data
+        comp_str = form.comp_id.data
+        quan_str = form.quantity.data
+        with Session() as db:
+            ware_comp = db.query(WarehouseStock).filter(and_((WarehouseStock.warehouse_id == ware_str),(WarehouseStock.component_id == comp_str))).first()
+            ware_capacity = db.query(Warehouses.capacity).filter(Warehouses.id == ware_str).first()
+            ware_taken1 = db.query(func.sum(WarehouseStock.quantity)).filter(WarehouseStock.warehouse_id == ware_str).all()
+            if ware_taken1[0][0]:
+                ware_taken = ware_taken1[0][0]
+            else:
+                ware_taken = 0
+            print(ware_capacity[0], ware_taken)
+        if ware_comp:
+            if ware_comp == ware_str and ware_comp == comp_str:
+                flash(Markup('<h3>Такая связь уже есть</h3>'))
+        elif ware_taken + quan_str > ware_capacity[0]:
+            flash(Markup('<h3>На складе не достаточно места</h3>'))
+        else:
+            with Session() as db:
+                new_ware_comp = WarehouseStock(warehouse_id=ware_str, component_id=comp_str, quantity=quan_str)
+                db.add(new_ware_comp)
+                db.commit()
+            flash(Markup('<h3>Связь успешно добавлена</h3>'))
+    with Session() as db:
+        query = db.query(WarehouseStock.id, Warehouses.name, Components.model, WarehouseStock.quantity).join(Components).join(Warehouses)
+        rows = [list(row) for row in query.all()]
+    return render_template('catalog.html', type='ware_to_comp', form=form, page_name='Учет комплектующих на складе', rows=rows, username=username)
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
 if __name__ == '__main__':
     app.run(debug=True)

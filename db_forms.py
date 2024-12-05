@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 
-from wtforms import StringField, PasswordField, IntegerField, FloatField, SelectField
+from wtforms import StringField, PasswordField, IntegerField, FloatField, SelectField, FileField
 from wtforms.validators import DataRequired, Length, Email
 
 class LoginForm(FlaskForm):
@@ -20,11 +20,13 @@ class SuppliersForm(FlaskForm):
     e_mail = StringField('E-mail:', validators=[DataRequired(), Email(message="Введите корректный адресс электронной почты")])
     phone = StringField('Номер телефона:', validators=[DataRequired(), Length(min=11, max=15)])
     address = StringField('Адрес поставщика:', validators=[DataRequired(), Length(min=4, max=100)])
+    image = FileField('Загрузить изображение', validators=[DataRequired()])
 
 class WarehousesForm(FlaskForm):
     name = StringField('Название склада:', validators=[DataRequired(), Length(min=5, max=60)])
     address = StringField('Адрес склада:', validators=[DataRequired(), Length(min=4, max=100)])
     capacity = IntegerField('Вместимость склада:', validators=[DataRequired()])
+    image = FileField('Загрузить изображение', validators=[DataRequired()])
 
 class ComponentsForm(FlaskForm):
     vendor = StringField('Производитель запчасти:', validators=[DataRequired(), Length(min=3, max=60)])
@@ -32,16 +34,22 @@ class ComponentsForm(FlaskForm):
     type = SelectField('Тип комплектующего',
         choices =['Центральный процессор', 'Видеокарта', 'Материнская плата', 'ОЗУ', 'Сетевая карта', 'Жесткий диск', 'Твердотельный накопитель'],
         validators = [DataRequired()])
-    price = FloatField('Цена запчасти:', validators=[DataRequired()])
+    image = FileField('Загрузить изображение', validators=[DataRequired()])
 
-class Supplier_componentsForm(FlaskForm):
-    vendor = StringField('Производитель запчасти:', validators=[DataRequired(), Length(min=3, max=60)])
-    model = StringField('Модель запчасти:', validators=[DataRequired(), Length(min=5, max=60)])
-    type = StringField('Тип:', validators=[DataRequired(), Length(min=5, max=60)])
-    price = FloatField('Цена запчасти:', validators=[DataRequired()])
+class SupplierComponentsForm(FlaskForm):
+    sup_id = SelectField('Поставщик:',
+        choices =[],
+        validators = [DataRequired()])
+    comp_id = SelectField('Комплектующее:',
+        choices =[],
+        validators = [DataRequired()])
+    price = FloatField('Цена комплектующего:', validators=[DataRequired()])
 
-class Warehouse_stockForm(FlaskForm):
-    vendor = StringField('Производитель запчасти:', validators=[DataRequired(), Length(min=3, max=60)])
-    model = StringField('Модель запчасти:', validators=[DataRequired(), Length(min=5, max=60)])
-    type = StringField('Тип:', validators=[DataRequired(), Length(min=5, max=60)])
-    price = FloatField('Цена запчасти:', validators=[DataRequired()])
+class WarehouseStockForm(FlaskForm):
+    ware_id = SelectField('Склад:',
+        choices =[],
+        validators = [DataRequired()])
+    comp_id = SelectField('Комплеткующее:',
+        choices =[],
+        validators = [DataRequired()])
+    quantity = IntegerField('Количество:', validators=[DataRequired()])

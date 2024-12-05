@@ -14,6 +14,7 @@ class Suppliers(Base):
     name = mapped_column(String(60), nullable=False)
     e_mail = mapped_column(String(30))
     phone_number = mapped_column(String(15))
+    image = mapped_column(String(20))
     address = mapped_column(Text)
 
     Supplier_components: Mapped[List['SupplierComponents']] = relationship('SupplierComponents', uselist=True, back_populates='supplier')
@@ -46,6 +47,7 @@ class Warehouses(Base):
     name = mapped_column(String(60), nullable=False)
     address = mapped_column(Text, nullable=False)
     capacity = mapped_column(Integer, nullable=False)
+    image = mapped_column(String(20))
     creation_date = mapped_column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
 
     Warehouse_stock: Mapped[List['WarehouseStock']] = relationship('WarehouseStock', uselist=True, back_populates='warehouse')
@@ -62,11 +64,10 @@ class Components(Base):
     vendor = mapped_column(String(40), nullable=False)
     model = mapped_column(String(90), nullable=False)
     type = mapped_column(String(50), nullable=False)
-    price = mapped_column(DECIMAL(10, 2), nullable=False)
     creation_date = mapped_column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
     update_date = mapped_column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
-    comp_image = mapped_column(String(20))
     created_by = mapped_column(Integer)
+    image = mapped_column(String(20))
 
     Users_: Mapped[Optional['Users']] = relationship('Users', back_populates='Components')
     Supplier_components: Mapped[List['SupplierComponents']] = relationship('SupplierComponents', uselist=True, back_populates='component')
@@ -85,7 +86,7 @@ class SupplierComponents(Base):
     id = mapped_column(Integer, primary_key=True)
     supplier_id = mapped_column(Integer, nullable=False)
     component_id = mapped_column(Integer, nullable=False)
-    supply_price = mapped_column(DECIMAL(10, 2), nullable=False)
+    price = mapped_column(DECIMAL(10, 2), nullable=False)
     supply_date = mapped_column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
 
     component: Mapped['Components'] = relationship('Components', back_populates='Supplier_components')

@@ -26,6 +26,7 @@
                             <a class="nav-link text-white" href="{{ url_for('login') }}">Вход</a>
                         </li>
                         {% else %}
+<!--                        Сюда новые кнопки в панель навигации-->
                         <li class="nav-item">
                             <a class="nav-link text-white" href="{{ url_for('parts') }}">Запчасти</a>
                         </li>
@@ -34,6 +35,12 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-white" href="{{ url_for('suppliers') }}">Поставщики</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ url_for('ware_to_comp') }}">Учет комплектующих на складе</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ url_for('comp_to_sup') }}">Учет поставщиков и комплектующих</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-white" href="{{ url_for('logout') }}">{{ username }}</a>

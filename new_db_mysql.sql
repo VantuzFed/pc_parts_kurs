@@ -22,6 +22,7 @@ CREATE TABLE `Warehouses` (
   `name` VARCHAR(60) NOT NULL,
   `address` TEXT NOT NULL,
   `capacity` INT NOT NULL,
+  `image` VARCHAR(20),
   `creation_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -31,11 +32,10 @@ CREATE TABLE `Components` (
   `vendor` VARCHAR(40) NOT NULL,
   `model` VARCHAR(90) NOT NULL,
   `type` VARCHAR(50) NOT NULL,
-  `price` DECIMAL(10, 2) NOT NULL,
   `creation_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `update_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `comp_image` VARCHAR(20),
   `created_by` INT,
+  `image` VARCHAR(20),
   FOREIGN KEY (`created_by`) REFERENCES `Users` (`id`) ON DELETE SET NULL
 );
 
@@ -56,6 +56,7 @@ CREATE TABLE `Suppliers` (
   `name` VARCHAR(60) NOT NULL,
   `e_mail` VARCHAR(30),
   `phone_number` VARCHAR(15),
+  `image` VARCHAR(20),
   `address` TEXT
 );
 
@@ -64,7 +65,7 @@ CREATE TABLE `Supplier_components` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `supplier_id` INT NOT NULL,
   `component_id` INT NOT NULL,
-  `supply_price` DECIMAL(10, 2) NOT NULL,
+  `price` DECIMAL(10, 2) NOT NULL,
   `supply_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`supplier_id`) REFERENCES `Suppliers` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`component_id`) REFERENCES `Components` (`id`)
