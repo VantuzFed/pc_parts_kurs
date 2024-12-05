@@ -27,13 +27,18 @@
                         <li class="nav-item">
                             <a class="nav-link text-white" href="{{ url_for('suppliers') }}">Поставщики</a>
                         </li>
+                        {% if username == False %}
                         <li class="nav-item">
                             <a class="nav-link text-white" href="{{ url_for('register') }}">Регистрация</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-white" href="{{ url_for('login') }}">Вход</a>
                         </li>
-
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ url_for('logout') }}">{{ username }}</a>
+                        </li>
+                        {% endif %}
                     </ul>
                 </nav>
             </div>

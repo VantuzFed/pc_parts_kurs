@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 
-from wtforms import StringField, PasswordField, IntegerField, FloatField
+from wtforms import StringField, PasswordField, IntegerField, FloatField, SelectField
 from wtforms.validators import DataRequired, Length, Email
 
 class LoginForm(FlaskForm):
@@ -27,6 +27,20 @@ class WarehousesForm(FlaskForm):
     capacity = IntegerField('Вместимость склада:', validators=[DataRequired()])
 
 class ComponentsForm(FlaskForm):
+    vendor = StringField('Производитель запчасти:', validators=[DataRequired(), Length(min=3, max=60)])
+    model = StringField('Модель запчасти:', validators=[DataRequired(), Length(min=5, max=60)])
+    type = SelectField('Тип комплектующего',
+        choices =['Центральный процессор', 'Видеокарта', 'Материнская плата', 'ОЗУ', 'Сетевая карта', 'Жесткий диск', 'Твердотельный накопитель'],
+        validators = [DataRequired()])
+    price = FloatField('Цена запчасти:', validators=[DataRequired()])
+
+class Supplier_componentsForm(FlaskForm):
+    vendor = StringField('Производитель запчасти:', validators=[DataRequired(), Length(min=3, max=60)])
+    model = StringField('Модель запчасти:', validators=[DataRequired(), Length(min=5, max=60)])
+    type = StringField('Тип:', validators=[DataRequired(), Length(min=5, max=60)])
+    price = FloatField('Цена запчасти:', validators=[DataRequired()])
+
+class Warehouse_stockForm(FlaskForm):
     vendor = StringField('Производитель запчасти:', validators=[DataRequired(), Length(min=3, max=60)])
     model = StringField('Модель запчасти:', validators=[DataRequired(), Length(min=5, max=60)])
     type = StringField('Тип:', validators=[DataRequired(), Length(min=5, max=60)])
