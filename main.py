@@ -1,5 +1,5 @@
 from types import NoneType
-from flask import Flask, render_template, flash, request, make_response, redirect, url_for, send_from_directory
+from flask import Flask, render_template, flash, request, make_response, redirect, url_for, send_from_directory, abort
 from werkzeug.utils import secure_filename
 from db_forms import *
 from markupsafe import Markup
@@ -123,6 +123,7 @@ def suppliers():
         e_mail_str = form.e_mail.data
         phone_str = form.phone.data
         address_str = form.address.data
+        file = form.image.data
         with Session() as db:
             supplier = db.query(Suppliers).filter(Suppliers.name == name_str).first()
         if supplier:
@@ -130,6 +131,11 @@ def suppliers():
                 flash(Markup('<h3>Такой поставщик уже есть</h3>'))
         else:
             with Session() as db:
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)  # Защищённое имя файла
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                else:
+                    flash('Неподдерживаемый формат файла!', 'danger')
                 new_supplier = Suppliers(name=name_str, e_mail=e_mail_str, phone_number=phone_str, address=address_str)
                 db.add(new_supplier)
                 db.commit()
@@ -143,6 +149,7 @@ def suppliers():
 def warehouses():
     form = WarehousesForm()
     username = get_user()
+    file = form.image.data
     if request.method == 'POST' and form.validate():
         name_str = form.name.data
         address_str = form.address.data
@@ -154,6 +161,11 @@ def warehouses():
                 flash(Markup('<h3>Такой склад уже есть</h3>'))
         else:
             with Session() as db:
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)  # Защищённое имя файла
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                else:
+                    flash('Неподдерживаемый формат файла!', 'danger')
                 new_warehouse = Warehouses(name=name_str, address=address_str, capacity=capacity_str)
                 db.add(new_warehouse)
                 db.commit()
@@ -173,6 +185,7 @@ def logout():
 def comp_to_sup():
     form = SupplierComponentsForm()
     username = get_user()
+    file = form.image.data
     with Session() as db:
         sup_items = db.query(Suppliers).all()
         form.sup_id.choices = [(item.id, item.name) for item in sup_items]
@@ -189,6 +202,11 @@ def comp_to_sup():
                 flash(Markup('<h3>Такая связь уже есть</h3>'))
         else:
             with Session() as db:
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)  # Защищённое имя файла
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                else:
+                    flash('Неподдерживаемый формат файла!', 'danger')
                 new_sup_comp = SupplierComponents(supplier_id=sup_str, component_id=comp_str, price=price_str)
                 db.add(new_sup_comp)
                 db.commit()
@@ -202,6 +220,7 @@ def comp_to_sup():
 def ware_to_comp():
     form = WarehouseStockForm()
     username = get_user()
+    file = form.image.data
     with Session() as db:
         ware_items = db.query(Warehouses).all()
         form.ware_id.choices = [(item.id, item.name) for item in ware_items]
@@ -227,6 +246,11 @@ def ware_to_comp():
             flash(Markup('<h3>На складе не достаточно места</h3>'))
         else:
             with Session() as db:
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)  # Защищённое имя файла
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                else:
+                    flash('Неподдерживаемый формат файла!', 'danger')
                 new_ware_comp = WarehouseStock(warehouse_id=ware_str, component_id=comp_str, quantity=quan_str)
                 db.add(new_ware_comp)
                 db.commit()
@@ -236,9 +260,12 @@ def ware_to_comp():
         rows = [list(row) for row in query.all()]
     return render_template('catalog.html', type='ware_to_comp', form=form, page_name='Учет комплектующих на складе', rows=rows, username=username)
 
-@app.route('/uploads/<filename>')
+@app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
-    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    try:
+        return send_from_directory(UPLOAD_FOLDER, filename)
+    except FileNotFoundError:
+        abort(404)
 
 if __name__ == '__main__':
     app.run(debug=True)

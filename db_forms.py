@@ -20,13 +20,13 @@ class SuppliersForm(FlaskForm):
     e_mail = StringField('E-mail:', validators=[DataRequired(), Email(message="Введите корректный адресс электронной почты")])
     phone = StringField('Номер телефона:', validators=[DataRequired(), Length(min=11, max=15)])
     address = StringField('Адрес поставщика:', validators=[DataRequired(), Length(min=4, max=100)])
-    image = FileField('Загрузить изображение', validators=[DataRequired()])
+    image = FileField('Загрузить изображение')
 
 class WarehousesForm(FlaskForm):
     name = StringField('Название склада:', validators=[DataRequired(), Length(min=5, max=60)])
     address = StringField('Адрес склада:', validators=[DataRequired(), Length(min=4, max=100)])
     capacity = IntegerField('Вместимость склада:', validators=[DataRequired()])
-    image = FileField('Загрузить изображение', validators=[DataRequired()])
+    image = FileField('Загрузить изображение')
 
 class ComponentsForm(FlaskForm):
     vendor = StringField('Производитель запчасти:', validators=[DataRequired(), Length(min=3, max=60)])
@@ -34,7 +34,7 @@ class ComponentsForm(FlaskForm):
     type = SelectField('Тип комплектующего',
         choices =['Центральный процессор', 'Видеокарта', 'Материнская плата', 'ОЗУ', 'Сетевая карта', 'Жесткий диск', 'Твердотельный накопитель'],
         validators = [DataRequired()])
-    image = FileField('Загрузить изображение', validators=[DataRequired()])
+    image = FileField('Загрузить изображение')
 
 class SupplierComponentsForm(FlaskForm):
     sup_id = SelectField('Поставщик:',
@@ -43,7 +43,7 @@ class SupplierComponentsForm(FlaskForm):
     comp_id = SelectField('Комплектующее:',
         choices =[],
         validators = [DataRequired()])
-    price = FloatField('Цена комплектующего:', validators=[DataRequired()])
+    price = FloatField('Цена комплектующего:')
 
 class WarehouseStockForm(FlaskForm):
     ware_id = SelectField('Склад:',
@@ -52,4 +52,4 @@ class WarehouseStockForm(FlaskForm):
     comp_id = SelectField('Комплеткующее:',
         choices =[],
         validators = [DataRequired()])
-    quantity = IntegerField('Количество:', validators=[DataRequired()])
+    quantity = IntegerField('Количество:')
