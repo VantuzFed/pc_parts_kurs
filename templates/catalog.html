@@ -47,9 +47,7 @@
                     {% for col in row %}
                   <p>{{ col }}</p>
                     {% endfor %}
-<!--                  <div class="d-flex justify-content-between align-items-center">-->
-<!--                      <button type="button" class="btn btn-sm btn-outline-secondary">Delete</button>-->
-<!--                  </div>-->
+                      <button class="delete-btn btn btn-sm btn-danger" data-id="{{ row[0] }}" page-type="{{ type }}">Удалить</button>
                 </div>
               </div>
             </div>
@@ -68,5 +66,32 @@
                 form.classList.add('hidden');
             }
         }
+
+
+        document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const recordId = this.getAttribute('data-id');
+        const typeP = this.getAttribute('page-type');
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');  // Получаем CSRF токен
+
+        fetch(`/delete_record/${typeP}/${recordId}`, {
+            method: 'POST',  // Используем POST запрос
+            headers: {
+                'Content-Type': 'application/json',  // Тип контента
+                'X-CSRFToken': csrfToken  // Отправка CSRF токена в заголовке
+            },
+            body: JSON.stringify({})  // Тело запроса (можно оставить пустым, если не нужно)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                console.error(data.message);
+            }
+        })
+        .catch(error => console.error('Ошибка:', error));
+    });
+});
     </script>
 {% endblock %}

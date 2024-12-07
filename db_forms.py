@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 
-from wtforms import StringField, PasswordField, IntegerField, FloatField, SelectField, FileField
+from wtforms import StringField, PasswordField, IntegerField, FloatField, SelectField, FileField, HiddenField, SubmitField
 from wtforms.validators import DataRequired, Length, Email
 
 class LoginForm(FlaskForm):
@@ -44,6 +44,7 @@ class SupplierComponentsForm(FlaskForm):
         choices =[],
         validators = [DataRequired()])
     price = FloatField('Цена комплектующего:')
+    image = FileField('Загрузить изображение')
 
 class WarehouseStockForm(FlaskForm):
     ware_id = SelectField('Склад:',
@@ -53,3 +54,8 @@ class WarehouseStockForm(FlaskForm):
         choices =[],
         validators = [DataRequired()])
     quantity = IntegerField('Количество:')
+    image = FileField('Загрузить изображение')
+
+class DeleteForm(FlaskForm):
+    record_id = HiddenField("Record ID")
+    submit = SubmitField("Удалить")

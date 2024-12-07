@@ -22,8 +22,8 @@ CREATE TABLE `Warehouses` (
   `name` VARCHAR(60) NOT NULL,
   `address` TEXT NOT NULL,
   `capacity` INT NOT NULL,
-  `image` VARCHAR(20),
-  `creation_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  `creation_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `image` VARCHAR(20)
 );
 
 -- Таблица комплектующих
@@ -46,6 +46,7 @@ CREATE TABLE `Warehouse_stock` (
   `component_id` INT NOT NULL,
   `quantity` INT NOT NULL,
   `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `image` VARCHAR(20),
   FOREIGN KEY (`warehouse_id`) REFERENCES `Warehouses` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`component_id`) REFERENCES `Components` (`id`) ON DELETE CASCADE
 );
@@ -56,8 +57,8 @@ CREATE TABLE `Suppliers` (
   `name` VARCHAR(60) NOT NULL,
   `e_mail` VARCHAR(30),
   `phone_number` VARCHAR(15),
-  `image` VARCHAR(20),
-  `address` TEXT
+  `address` TEXT,
+    `image` VARCHAR(20)
 );
 
 -- Связь поставщиков с комплектующими
@@ -67,6 +68,7 @@ CREATE TABLE `Supplier_components` (
   `component_id` INT NOT NULL,
   `price` DECIMAL(10, 2) NOT NULL,
   `supply_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `image` VARCHAR(20),
   FOREIGN KEY (`supplier_id`) REFERENCES `Suppliers` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`component_id`) REFERENCES `Components` (`id`)
 );

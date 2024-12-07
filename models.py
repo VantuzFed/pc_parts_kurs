@@ -4,8 +4,8 @@ from sqlalchemy import Column, DECIMAL, Enum, ForeignKeyConstraint, Index, Integ
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
 from sqlalchemy.orm.base import Mapped
 
-Base = declarative_base()
 
+Base = declarative_base()
 
 class Suppliers(Base):
     __tablename__ = 'Suppliers'
@@ -14,8 +14,8 @@ class Suppliers(Base):
     name = mapped_column(String(60), nullable=False)
     e_mail = mapped_column(String(30))
     phone_number = mapped_column(String(15))
-    image = mapped_column(String(20))
     address = mapped_column(Text)
+    image = mapped_column(String(20))
 
     Supplier_components: Mapped[List['SupplierComponents']] = relationship('SupplierComponents', uselist=True, back_populates='supplier')
 
@@ -47,8 +47,8 @@ class Warehouses(Base):
     name = mapped_column(String(60), nullable=False)
     address = mapped_column(Text, nullable=False)
     capacity = mapped_column(Integer, nullable=False)
-    image = mapped_column(String(20))
     creation_date = mapped_column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
+    image = mapped_column(String(20))
 
     Warehouse_stock: Mapped[List['WarehouseStock']] = relationship('WarehouseStock', uselist=True, back_populates='warehouse')
 
@@ -88,6 +88,7 @@ class SupplierComponents(Base):
     component_id = mapped_column(Integer, nullable=False)
     price = mapped_column(DECIMAL(10, 2), nullable=False)
     supply_date = mapped_column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
+    image = mapped_column(String(20))
 
     component: Mapped['Components'] = relationship('Components', back_populates='Supplier_components')
     supplier: Mapped['Suppliers'] = relationship('Suppliers', back_populates='Supplier_components')
@@ -107,6 +108,7 @@ class WarehouseStock(Base):
     component_id = mapped_column(Integer, nullable=False)
     quantity = mapped_column(Integer, nullable=False)
     last_updated = mapped_column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
+    image = mapped_column(String(20))
 
     component: Mapped['Components'] = relationship('Components', back_populates='Warehouse_stock')
     warehouse: Mapped['Warehouses'] = relationship('Warehouses', back_populates='Warehouse_stock')

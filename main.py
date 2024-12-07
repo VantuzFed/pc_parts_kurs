@@ -1,10 +1,12 @@
 from types import NoneType
-from flask import Flask, render_template, flash, request, make_response, redirect, url_for, send_from_directory, abort
+
+from blueman.bluez.obex.Session import Session
+from flask import Flask, render_template, flash, request, make_response, redirect, url_for, send_from_directory, abort, jsonify
 from werkzeug.utils import secure_filename
 from db_forms import *
 from markupsafe import Markup
 from flask_wtf.csrf import CSRFProtect
-import os
+import os, uuid
 from sqlalchemy import  create_engine, or_, and_, func
 from sqlalchemy.orm import sessionmaker
 from models import *
@@ -21,6 +23,7 @@ def allowed_file(filename):
 engine = create_engine("mysql+pymysql://root:35678@127.0.0.1/pc_parts")
 Session = sessionmaker(bind=engine)
 
+
 def get_user():
     user_id = request.cookies.get('user_id')
     if user_id:
@@ -29,8 +32,68 @@ def get_user():
         if user:
             name = user.first_name
             return name
+        else:
+            return False
     else:
         return False
+
+def file_upload(file):
+    if file and allowed_file(file.filename):
+        secure_name = secure_filename(file.filename)
+        name, ext = os.path.splitext(secure_name)
+        truncated_name = name[:5]
+        unique_id = uuid.uuid4().hex[:8]
+        filename = f"{truncated_name}_{unique_id}{ext}"
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        return filename
+    else:
+        return None
+
+
+# @app.route('/delete_record/<type>', methods=['POST'])
+# def delete_record(type):
+#     form = DeleteForm()
+#     if form.validate_on_submit():
+#         record_id = form.record_id.data
+#
+#         return redirect(url_for(type))
+#     return "Invalid Form Submission", 400
+
+
+@app.route('/delete_record/<type_page>/<int:record_id>', methods=['POST'])
+def delete_record(type_page, record_id):
+    match type_page:
+        case 'parts':
+            with Session() as db:
+                record = db.query(Components).filter_by(id=record_id).first()
+                if record:
+                    db.delete(record)
+                    db.commit()
+        case 'suppliers':
+            with Session() as db:
+                record = db.query(Suppliers).filter_by(id=record_id).first()
+                if record:
+                    db.delete(record)
+                    db.commit()
+        case 'warehouses':
+            with Session() as db:
+                record = db.query(Warehouses).filter_by(id=record_id).first()
+                if record:
+                    db.delete(record)
+                    db.commit()
+        case 'comp_to_sup':
+            with Session() as db:
+                record = db.query(SupplierComponents).filter_by(id=record_id).first()
+                if record:
+                    db.delete(record)
+                    db.commit()
+        case 'ware_to_comp':
+            with Session() as db:
+                record = db.query(WarehouseStock).filter_by(id=record_id).first()
+                if record:
+                    db.delete(record)
+                    db.commit()
+    return jsonify({"success": True, "message": f"Record {record_id} deleted."})
 
 @app.route('/')
 def index():
@@ -61,6 +124,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
+    form_del = DeleteForm()
     username = get_user()
     if request.method == 'POST' and form.validate():
         login_str = form.login.data
@@ -81,11 +145,12 @@ def register():
                 db.commit()
             flash(Markup('<h3>Пользователь успешно создан</h3>'))
 
-    return render_template('register.html', form=form, username=username)
+    return render_template('register.html', form=form, form_del=form_del, username=username)
 
 @app.route('/parts', methods=['GET', 'POST'])
 def parts():
     form = ComponentsForm()
+    form_del = DeleteForm()
     username = get_user()
     if request.method == 'POST' and form.validate():
         vendor_str = form.vendor.data
@@ -100,23 +165,19 @@ def parts():
                 flash(Markup('<h3>Такая запчасть уже есть</h3>'))
         else:
             with Session() as db:
-                if file and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)  # Защищённое имя файла
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                else:
-                    flash('Неподдерживаемый формат файла!', 'danger')
-                new_part = Components(vendor=vendor_str, model=model_str, type=type_str, created_by=user_id, image=filename)
+                new_part = Components(vendor=vendor_str, model=model_str, type=type_str, created_by=user_id, image=file_upload(file))
                 db.add(new_part)
                 db.commit()
             flash(Markup('<h3>Запчасть успешно добавлена</h3>'))
     with Session() as db:
         query = db.query(Components.id, Components.vendor, Components.model, Components.type, Components.creation_date, Users.first_name, Components.image).join(Users)
         rows = [list(row) for row in query.all()]
-    return render_template('catalog.html', type='parts', form=form, page_name='Запчасти', rows=rows, username=username)
+    return render_template('catalog.html', type='parts', form=form, form_del=form_del, page_name='Запчасти', rows=rows, username=username)
 
 @app.route('/suppliers', methods=['GET', 'POST'])
 def suppliers():
     form = SuppliersForm()
+    form_del = DeleteForm()
     username = get_user()
     if request.method == 'POST' and form.validate():
         name_str = form.name.data
@@ -131,23 +192,19 @@ def suppliers():
                 flash(Markup('<h3>Такой поставщик уже есть</h3>'))
         else:
             with Session() as db:
-                if file and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)  # Защищённое имя файла
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                else:
-                    flash('Неподдерживаемый формат файла!', 'danger')
-                new_supplier = Suppliers(name=name_str, e_mail=e_mail_str, phone_number=phone_str, address=address_str)
+                new_supplier = Suppliers(name=name_str, e_mail=e_mail_str, phone_number=phone_str, address=address_str, image=file_upload(file))
                 db.add(new_supplier)
                 db.commit()
             flash(Markup('<h3>Поставщик успешно добавлен</h3>'))
     with Session() as db:
-        query = db.query(Suppliers.id, Suppliers.name, Suppliers.e_mail, Suppliers.phone_number, Suppliers.address)
+        query = db.query(Suppliers.id, Suppliers.name, Suppliers.e_mail, Suppliers.phone_number, Suppliers.address, Suppliers.image)
         rows = [list(row) for row in query.all()]
-    return render_template('catalog.html', type='suppliers', form=form, page_name='Поставщики', rows=rows, username=username)
+    return render_template('catalog.html', type='suppliers', form=form, form_del=form_del, page_name='Поставщики', rows=rows, username=username)
 
 @app.route('/warehouses', methods=['GET', 'POST'])
 def warehouses():
     form = WarehousesForm()
+    form_del = DeleteForm()
     username = get_user()
     file = form.image.data
     if request.method == 'POST' and form.validate():
@@ -161,19 +218,14 @@ def warehouses():
                 flash(Markup('<h3>Такой склад уже есть</h3>'))
         else:
             with Session() as db:
-                if file and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)  # Защищённое имя файла
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                else:
-                    flash('Неподдерживаемый формат файла!', 'danger')
-                new_warehouse = Warehouses(name=name_str, address=address_str, capacity=capacity_str)
+                new_warehouse = Warehouses(name=name_str, address=address_str, capacity=capacity_str, image=file_upload(file))
                 db.add(new_warehouse)
                 db.commit()
             flash(Markup('<h3>Склад успешно добавлен</h3>'))
     with Session() as db:
-        query = db.query(Warehouses.id, Warehouses.name, Warehouses.address, Warehouses.capacity)
+        query = db.query(Warehouses.id, Warehouses.name, Warehouses.address, Warehouses.capacity, Warehouses.image)
         rows = [list(row) for row in query.all()]
-    return render_template('catalog.html', type='warehouses', form=form, page_name='Склады', rows=rows, username=username)
+    return render_template('catalog.html', type='warehouses', form=form, form_del=form_del, page_name='Склады', rows=rows, username=username)
 
 @app.route('/logout')
 def logout():
@@ -184,6 +236,7 @@ def logout():
 @app.route('/comp_to_sup', methods=['GET', 'POST'])
 def comp_to_sup():
     form = SupplierComponentsForm()
+    form_del = DeleteForm()
     username = get_user()
     file = form.image.data
     with Session() as db:
@@ -202,23 +255,19 @@ def comp_to_sup():
                 flash(Markup('<h3>Такая связь уже есть</h3>'))
         else:
             with Session() as db:
-                if file and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)  # Защищённое имя файла
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                else:
-                    flash('Неподдерживаемый формат файла!', 'danger')
-                new_sup_comp = SupplierComponents(supplier_id=sup_str, component_id=comp_str, price=price_str)
+                new_sup_comp = SupplierComponents(supplier_id=sup_str, component_id=comp_str, price=price_str, image=file_upload(file))
                 db.add(new_sup_comp)
                 db.commit()
             flash(Markup('<h3>Связь успешно добавлена</h3>'))
     with Session() as db:
-        query = db.query(SupplierComponents.id, Suppliers.name, Components.model, SupplierComponents.price).join(Components).join(Suppliers)
+        query = db.query(SupplierComponents.id, Suppliers.name, Components.model, SupplierComponents.price, SupplierComponents.image).join(Components).join(Suppliers)
         rows = [list(row) for row in query.all()]
-    return render_template('catalog.html', type='comp_to_sup', form=form, page_name='Поставщики и комплектующие', rows=rows, username=username)
+    return render_template('catalog.html', type='comp_to_sup', form=form, form_del=form_del, page_name='Поставщики и комплектующие', rows=rows, username=username)
 
 @app.route('/ware_to_comp', methods=['GET', 'POST'])
 def ware_to_comp():
     form = WarehouseStockForm()
+    form_del = DeleteForm()
     username = get_user()
     file = form.image.data
     with Session() as db:
@@ -246,19 +295,14 @@ def ware_to_comp():
             flash(Markup('<h3>На складе не достаточно места</h3>'))
         else:
             with Session() as db:
-                if file and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)  # Защищённое имя файла
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                else:
-                    flash('Неподдерживаемый формат файла!', 'danger')
-                new_ware_comp = WarehouseStock(warehouse_id=ware_str, component_id=comp_str, quantity=quan_str)
+                new_ware_comp = WarehouseStock(warehouse_id=ware_str, component_id=comp_str, quantity=quan_str, image=file_upload(file))
                 db.add(new_ware_comp)
                 db.commit()
             flash(Markup('<h3>Связь успешно добавлена</h3>'))
     with Session() as db:
-        query = db.query(WarehouseStock.id, Warehouses.name, Components.model, WarehouseStock.quantity).join(Components).join(Warehouses)
+        query = db.query(WarehouseStock.id, Warehouses.name, Components.model, WarehouseStock.quantity, WarehouseStock.image).join(Components).join(Warehouses)
         rows = [list(row) for row in query.all()]
-    return render_template('catalog.html', type='ware_to_comp', form=form, page_name='Учет комплектующих на складе', rows=rows, username=username)
+    return render_template('catalog.html', type='ware_to_comp', form=form, form_del=form_del, page_name='Учет комплектующих на складе', rows=rows, username=username)
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
