@@ -13,7 +13,7 @@ CREATE TABLE `Users` (
   `phone_number` VARCHAR(15) NOT NULL,
   `password_` VARCHAR(20) NOT NULL,
   `account_type` ENUM('User', 'Admin') DEFAULT 'User',
-  `profile_image` VARCHAR(250)
+  `profile_image` VARCHAR(50)
 );
 
 -- Таблица складов
@@ -23,7 +23,7 @@ CREATE TABLE `Warehouses` (
   `address` TEXT NOT NULL,
   `capacity` INT NOT NULL,
   `creation_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `image` VARCHAR(20)
+    `image` VARCHAR(50)
 );
 
 -- Таблица комплектующих
@@ -35,7 +35,7 @@ CREATE TABLE `Components` (
   `creation_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `update_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created_by` INT,
-  `image` VARCHAR(20),
+  `image` VARCHAR(50),
   FOREIGN KEY (`created_by`) REFERENCES `Users` (`id`) ON DELETE SET NULL
 );
 
@@ -46,7 +46,7 @@ CREATE TABLE `Warehouse_stock` (
   `component_id` INT NOT NULL,
   `quantity` INT NOT NULL,
   `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `image` VARCHAR(20),
+    `image` VARCHAR(50),
   FOREIGN KEY (`warehouse_id`) REFERENCES `Warehouses` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`component_id`) REFERENCES `Components` (`id`) ON DELETE CASCADE
 );
@@ -58,7 +58,7 @@ CREATE TABLE `Suppliers` (
   `e_mail` VARCHAR(30),
   `phone_number` VARCHAR(15),
   `address` TEXT,
-    `image` VARCHAR(20)
+    `image` VARCHAR(50)
 );
 
 -- Связь поставщиков с комплектующими
@@ -68,7 +68,7 @@ CREATE TABLE `Supplier_components` (
   `component_id` INT NOT NULL,
   `price` DECIMAL(10, 2) NOT NULL,
   `supply_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `image` VARCHAR(20),
+    `image` VARCHAR(50),
   FOREIGN KEY (`supplier_id`) REFERENCES `Suppliers` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`component_id`) REFERENCES `Components` (`id`)
 );
