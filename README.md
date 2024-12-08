@@ -8,5 +8,5 @@
 Научный руководитель: Дуплей Максим Игоревич
 Дата: 20.11.2024
 
-![](https://geps.dev/progress/97?dangerColor=800000&warningColor=ff9900&successColor=006600)
+![](https://geps.dev/progress/99?dangerColor=800000&warningColor=ff9900&successColor=006600)
 
