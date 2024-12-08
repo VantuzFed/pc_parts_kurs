@@ -36,7 +36,7 @@
         <div class="container">
           <div class="row">
             {% for row in rows %}
-            <div class="col-md-4" id="container-{{ row[0] }}">
+            <div class="col-md-3" id="container-{{ row[0] }}">
               <div class="card mb-4 box-shadow">
                   {% if row[-1] %}
                 <img class="card-img-top"style="height: 225px; width: 100%; display: block;" src="uploads/{{ row[-1] }}" data-holder-rendered="true">
@@ -45,7 +45,9 @@
                     {% endif %}
                   <div class="card-body">
                     {% for col in row %}
+                      {% if col != row[-1] and col != row[0] %}
                   <p>{{ col }}</p>
+                      {% endif %}
                     {% endfor %}
                       <button class="delete-btn btn btn-sm btn-danger" data-id="{{ row[0] }}" page-type="{{ type }}">Удалить</button>
                 </div>
@@ -73,6 +75,11 @@
         const recordId = this.getAttribute('data-id');
         const typeP = this.getAttribute('page-type');
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');  // Получаем CSRF токен
+
+        const userConfirmed = confirm("Вы уверены, что хотите удалить эту запись?");
+        if (!userConfirmed) {
+            return; // Если пользователь отменил, выходим из функции
+        }
 
         fetch(`/delete_record/${typeP}/${recordId}`, {
             method: 'POST',  // Используем POST запрос

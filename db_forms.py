@@ -56,6 +56,3 @@ class WarehouseStockForm(FlaskForm):
     quantity = IntegerField('Количество:')
     image = FileField('Загрузить изображение')
 
-class DeleteForm(FlaskForm):
-    record_id = HiddenField("Record ID")
-    submit = SubmitField("Удалить")

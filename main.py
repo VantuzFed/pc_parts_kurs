@@ -29,6 +29,7 @@ def get_user():
     if user_id:
         with Session() as db:
             user = db.query(Users).filter_by(id=user_id).first()
+            print(user.id)
         if user:
             name = user.first_name
             return name
@@ -49,51 +50,27 @@ def file_upload(file):
     else:
         return None
 
-
-# @app.route('/delete_record/<type>', methods=['POST'])
-# def delete_record(type):
-#     form = DeleteForm()
-#     if form.validate_on_submit():
-#         record_id = form.record_id.data
-#
-#         return redirect(url_for(type))
-#     return "Invalid Form Submission", 400
-
-
 @app.route('/delete_record/<type_page>/<int:record_id>', methods=['POST'])
 def delete_record(type_page, record_id):
-    match type_page:
-        case 'parts':
-            with Session() as db:
-                record = db.query(Components).filter_by(id=record_id).first()
-                if record:
-                    db.delete(record)
-                    db.commit()
-        case 'suppliers':
-            with Session() as db:
-                record = db.query(Suppliers).filter_by(id=record_id).first()
-                if record:
-                    db.delete(record)
-                    db.commit()
-        case 'warehouses':
-            with Session() as db:
-                record = db.query(Warehouses).filter_by(id=record_id).first()
-                if record:
-                    db.delete(record)
-                    db.commit()
-        case 'comp_to_sup':
-            with Session() as db:
-                record = db.query(SupplierComponents).filter_by(id=record_id).first()
-                if record:
-                    db.delete(record)
-                    db.commit()
-        case 'ware_to_comp':
-            with Session() as db:
-                record = db.query(WarehouseStock).filter_by(id=record_id).first()
-                if record:
-                    db.delete(record)
-                    db.commit()
-    return jsonify({"success": True, "message": f"Record {record_id} deleted."})
+    model_mapping = {
+        'parts': Components,
+        'suppliers': Suppliers,
+        'warehouses': Warehouses,
+        'comp_to_sup': SupplierComponents,
+        'ware_to_comp': WarehouseStock,
+    }
+    model = model_mapping.get(type_page)
+    if not model:
+        return jsonify({"success": False, "message": "Invalid type_page specified."}), 400
+    with Session() as db:
+        record = db.query(model).filter_by(id=record_id).first()
+        if record:
+            db.delete(record)
+            db.commit()
+            return jsonify({"success": True, "message": f"Record {record_id} deleted."})
+        else:
+            return jsonify({"success": False, "message": "Record not found."}), 404
+
 
 @app.route('/')
 def index():
@@ -108,11 +85,11 @@ def login():
         login_str = form.login.data
         password_str = form.password.data
         with Session() as db:
-            user = db.query(Users).filter(or_(Users.login == login_str, Users.password_ == password_str)).first()
+            user = db.query(Users).filter(and_(Users.login == login_str, Users.password_ == password_str)).first()
         if user:
             if user.login == login_str or user.password_ == password_str:
                 flash(Markup('<h3>Вы успешно зашли в аккаунт</h3>'))
-                flash(Markup(f'<p>Тип аккаунта: {user.account_type}</p>'))
+                flash(Markup(f'<p>Имя: {user.first_name}</p><p>Тип аккаунта: {user.account_type}</p>'))
                 response = make_response(render_template('login_msg.html', form=form, username=username))
                 response.set_cookie('user_id', str(user.id), max_age=60 * 60 * 24)
                 return response
@@ -124,7 +101,6 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-    form_del = DeleteForm()
     username = get_user()
     if request.method == 'POST' and form.validate():
         login_str = form.login.data
@@ -145,12 +121,11 @@ def register():
                 db.commit()
             flash(Markup('<h3>Пользователь успешно создан</h3>'))
 
-    return render_template('register.html', form=form, form_del=form_del, username=username)
+    return render_template('register.html', form=form, username=username)
 
 @app.route('/parts', methods=['GET', 'POST'])
 def parts():
     form = ComponentsForm()
-    form_del = DeleteForm()
     username = get_user()
     if request.method == 'POST' and form.validate():
         vendor_str = form.vendor.data
@@ -172,12 +147,11 @@ def parts():
     with Session() as db:
         query = db.query(Components.id, Components.vendor, Components.model, Components.type, Components.creation_date, Users.first_name, Components.image).join(Users)
         rows = [list(row) for row in query.all()]
-    return render_template('catalog.html', type='parts', form=form, form_del=form_del, page_name='Запчасти', rows=rows, username=username)
+    return render_template('catalog.html', type='parts', form=form, page_name='Запчасти', rows=rows, username=username)
 
 @app.route('/suppliers', methods=['GET', 'POST'])
 def suppliers():
     form = SuppliersForm()
-    form_del = DeleteForm()
     username = get_user()
     if request.method == 'POST' and form.validate():
         name_str = form.name.data
@@ -199,12 +173,11 @@ def suppliers():
     with Session() as db:
         query = db.query(Suppliers.id, Suppliers.name, Suppliers.e_mail, Suppliers.phone_number, Suppliers.address, Suppliers.image)
         rows = [list(row) for row in query.all()]
-    return render_template('catalog.html', type='suppliers', form=form, form_del=form_del, page_name='Поставщики', rows=rows, username=username)
+    return render_template('catalog.html', type='suppliers', form=form, page_name='Поставщики', rows=rows, username=username)
 
 @app.route('/warehouses', methods=['GET', 'POST'])
 def warehouses():
     form = WarehousesForm()
-    form_del = DeleteForm()
     username = get_user()
     file = form.image.data
     if request.method == 'POST' and form.validate():
@@ -225,7 +198,7 @@ def warehouses():
     with Session() as db:
         query = db.query(Warehouses.id, Warehouses.name, Warehouses.address, Warehouses.capacity, Warehouses.image)
         rows = [list(row) for row in query.all()]
-    return render_template('catalog.html', type='warehouses', form=form, form_del=form_del, page_name='Склады', rows=rows, username=username)
+    return render_template('catalog.html', type='warehouses', form=form, page_name='Склады', rows=rows, username=username)
 
 @app.route('/logout')
 def logout():
@@ -236,7 +209,6 @@ def logout():
 @app.route('/comp_to_sup', methods=['GET', 'POST'])
 def comp_to_sup():
     form = SupplierComponentsForm()
-    form_del = DeleteForm()
     username = get_user()
     file = form.image.data
     with Session() as db:
@@ -262,12 +234,11 @@ def comp_to_sup():
     with Session() as db:
         query = db.query(SupplierComponents.id, Suppliers.name, Components.model, SupplierComponents.price, SupplierComponents.image).join(Components).join(Suppliers)
         rows = [list(row) for row in query.all()]
-    return render_template('catalog.html', type='comp_to_sup', form=form, form_del=form_del, page_name='Поставщики и комплектующие', rows=rows, username=username)
+    return render_template('catalog.html', type='comp_to_sup', form=form, page_name='Поставщики и комплектующие', rows=rows, username=username)
 
 @app.route('/ware_to_comp', methods=['GET', 'POST'])
 def ware_to_comp():
     form = WarehouseStockForm()
-    form_del = DeleteForm()
     username = get_user()
     file = form.image.data
     with Session() as db:
@@ -302,7 +273,7 @@ def ware_to_comp():
     with Session() as db:
         query = db.query(WarehouseStock.id, Warehouses.name, Components.model, WarehouseStock.quantity, WarehouseStock.image).join(Components).join(Warehouses)
         rows = [list(row) for row in query.all()]
-    return render_template('catalog.html', type='ware_to_comp', form=form, form_del=form_del, page_name='Учет комплектующих на складе', rows=rows, username=username)
+    return render_template('catalog.html', type='ware_to_comp', form=form, page_name='Учет комплектующих на складе', rows=rows, username=username)
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
