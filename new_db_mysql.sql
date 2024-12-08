@@ -13,7 +13,7 @@ CREATE TABLE `Users` (
   `phone_number` VARCHAR(15) NOT NULL,
   `password_` VARCHAR(20) NOT NULL,
   `account_type` ENUM('User', 'Admin') DEFAULT 'User',
-  `profile_image` VARCHAR(20)
+  `profile_image` VARCHAR(250)
 );
 
 -- Таблица складов
