@@ -15,7 +15,7 @@
 
 **Дата:** 20.11.2024
 
-![image](https://github.com/user-attachments/assets/1bb63f0a-fa04-4eec-917e-85172cc6c5c3)
+![parts](https://github.com/user-attachments/assets/9e21b9f8-068d-4768-a93d-262805906320)
 
 ![](https://geps.dev/progress/99?dangerColor=800000&warningColor=ff9900&successColor=006600)
 
